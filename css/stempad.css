@@ -1,0 +1,32 @@
+body {
+	background-color: #808080;
+	font-family: Arial, Roboto, “Droid Sans”, “游ゴシック”, YuGothic, “ヒラギノ角ゴ ProN W3”, “Hiragino Kaku Gothic ProN”, “メイリオ”, Meiryo, sans-serif;
+}
+a.navbar-brand {
+	color: white;
+}
+div#editorbody{
+	border: 1px solid #e0e0e0;
+	min-height: 100px;
+	padding: 32px 32px 32px;
+	background-color: white;
+}
+
+div#dictA{
+	border: 1px solid #e0e0e0;
+	min-height: 100px;
+	padding: 32px 32px 32px;
+	background-color: #c0ffee;
+}
+
+div#dictB{
+	border: 1px solid #e0e0e0;
+	min-height: 100px;
+	padding: 32px 32px 32px;
+	background-color: white;
+	background-color: #ffc0ee;
+}
+
+h4 {
+	color: white;
+}
