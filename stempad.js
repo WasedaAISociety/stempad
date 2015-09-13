@@ -503,12 +503,15 @@ var WordType;
 })(WordType || (WordType = {}));
 var Stempad = (function () {
     //
-    function Stempad(ediv) {
+    function Stempad(ediv, pdiv, ptdiv) {
         this.dictA = new Array();
         this.dictB = new Array();
+        this.agreementRate = 0;
         var that = this;
         //
         this.editorDiv = ediv;
+        this.perceptLevelDiv = pdiv;
+        this.perceptLevelTextDiv = ptdiv;
         this.editorDiv.onclick = function (e) { e.stopPropagation(); };
         this.setDictionary();
         document.body.onclick = function () { that.markupBasedOnDictionary(); };
@@ -563,8 +566,8 @@ var Stempad = (function () {
             return (a[1] === b[1]);
         });
         //
-        this.WordListInDict = this.dictBasedWord.propertiesNamed(1);
-        this.WordListInDict.stableSort(function (a, b) {
+        this.wordListInDict = this.dictBasedWord.propertiesNamed(1);
+        this.wordListInDict.stableSort(function (a, b) {
             return a.length - b.length;
         });
         this.showDictionary();
@@ -636,26 +639,34 @@ var Stempad = (function () {
     };
     Stempad.prototype.markupBasedOnDictionary = function () {
         var text = this.getEditorText();
-        var separated = text.splitByArraySeparatorSeparatedLong(this.WordListInDict);
+        var separated = text.splitByArraySeparatorSeparatedLong(this.wordListInDict);
+        var wordCount = 0;
+        var samePerceptionCount = 0;
         for (var i = 0; i < separated.length; i++) {
             var type = this.getWordType(separated[i]);
             if (type == WordType.SamePerception) {
                 separated[i] = '<span style="background-color: #c0ffee">' + separated[i].escapeForHTML() + "</span>";
+                wordCount++;
+                samePerceptionCount++;
             }
             else if (type == WordType.DifferentPerception) {
                 separated[i] = '<span style="background-color: #ffc0ee">' + separated[i].escapeForHTML() + "</span>";
+                wordCount++;
             }
             else {
                 separated[i] = separated[i].escapeForHTML();
             }
         }
+        this.agreementRate = samePerceptionCount / wordCount * 100;
+        this.perceptLevelDiv.style.width = this.agreementRate + "%";
+        this.perceptLevelTextDiv.innerHTML = "一致度: " + this.agreementRate.toFixed(2) + "%";
         text = separated.join("");
         this.setEditorHTMLText(text);
     };
     return Stempad;
 })();
 $(function () {
-    var stempad = new Stempad(document.getElementById("editorbody"));
+    var stempad = new Stempad(document.getElementById("editorbody"), document.getElementById("perceptLevel"), document.getElementById("perceptLevelText"));
     stempad.setDictionary([
         ["LMD3UwP5Twms9hnW3yUHAQ", "集合", "ある特定のはっきり識別できる条件に合うものを一まとめにして考えた、全体。"],
         ["67SNKR52QYqtrZH57SqMNA", "概念", "事象に対して、抽象化・ 普遍化してとらえた、思考の基礎となる基本的な形態として、脳の機能によってとらえたもの。"],
