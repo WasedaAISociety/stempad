@@ -15,6 +15,7 @@ interface Array<T>
 	getAllMatched(obj: any, fEqualTo?: FEqualToType): Array<any>;
 	pushUnique(obj: any, fEqualTo?: FEqualToType): any;
 	stableSort(f: FEqualToType): void;
+	propertiesNamed(pName: any): Array<any>;
 }
 
 Array.prototype.removeAllObject = function(anObject:any){
@@ -275,14 +276,17 @@ Array.prototype.splitByArray = function(separatorList){
 	
 	return retArray;
 }
-Array.prototype.propertiesNamed = function(pName){
+*/
+Array.prototype.propertiesNamed = function(pName: any): Array<any>
+{
 	//Array内の各要素のプロパティpNameのリストを返す。
-	var retArray = new Array();
+	var retArray = new Array<any>();
 	for(var i = 0, iLen = this.length; i < iLen; i++){
 		retArray.push(this[i][pName]);
 	}
 	return retArray;
 }
+/*
 Array.prototype.logAsHexByte = function(logfunc){
 	//十六進バイト列としてデバッグ出力する。
 	//logfuncは省略時はconsole.logとなる。

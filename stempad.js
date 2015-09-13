@@ -3,6 +3,8 @@
 //
 ;
 Array.prototype.removeAllObject = function (anObject) {
+    //Array中にある全てのanObjectを削除し、空いた部分は前につめる。
+    //戻り値は削除が一回でも実行されたかどうか
     var ret = false;
     for (var i = 0; i < this.length; i++) {
         if (this[i] == anObject) {
@@ -14,6 +16,9 @@ Array.prototype.removeAllObject = function (anObject) {
     return ret;
 };
 Array.prototype.removeAnObject = function (anObject, fEqualTo) {
+    //Array中にある最初のanObjectを削除し、空いた部分は前につめる。
+    //fEqualToは省略可能で、評価関数fEqualTo(array[i], obj)を設定する。
+    //戻り値は削除が実行されたかどうか
     if (!(fEqualTo instanceof Function)) {
         fEqualTo = function (a, b) { return (a == b); };
     }
@@ -25,7 +30,48 @@ Array.prototype.removeAnObject = function (anObject, fEqualTo) {
     }
     return false;
 };
+/*
+Array.prototype.removeByIndex = function(index, length){
+    //Array[index]を削除し、空いた部分は前につめる。
+    if(length === undefined){
+        length = 1;
+    }
+    this.splice(index, length);
+    return;
+}
+Array.prototype.insertAtIndex = function(index, data){
+    return this.splice(index, 0, data);
+}
+Array.prototype.symmetricDifferenceWith = function(b, fEqualTo){
+    // 対称差(XOR)集合を求める
+    // fEqualToは省略可能で、評価関数fEqualTo(a[i], b[j])を設定する。
+    var a = this.copy();
+    var ei;
+    for(var i = 0, len = b.length; i < len; i++){
+        ei = a.getIndex(b[i], fEqualTo)
+        if(ei != -1){
+            a.removeByIndex(ei);
+        } else{
+            a.push(b[i]);
+        }
+    }
+    return a;
+}
+Array.prototype.intersectionWith = function(b, fEqualTo){
+    //積集合（AND）を求める
+    //fEqualToは省略可能で、評価関数fEqualTo(a[i], b[j])を設定する。
+    var r = new Array();
+    for(var i = 0, len = b.length; i < len; i++){
+        if(this.includes(b[i], fEqualTo)){
+            r.push(b[i]);
+        }
+    }
+    return r;
+}
+*/
 Array.prototype.unionWith = function (b, fEqualTo) {
+    //和集合（OR）を求める
+    //fEqualToは省略可能で、評価関数fEqualTo(a[i], b[j])を設定する。
     var r = new Array();
     for (var i = 0, len = b.length; i < len; i++) {
         if (!this.includes(b[i], fEqualTo)) {
@@ -34,7 +80,39 @@ Array.prototype.unionWith = function (b, fEqualTo) {
     }
     return this.concat(r);
 };
+/*
+Array.prototype.isEqualTo = function(b, fEqualTo){
+    //retv: false or true.
+    //二つの配列が互いに同じ要素を同じ個数だけ持つか調べる。
+    //fEqualToは省略可能で、評価関数fEqualTo(a[i], b[i])を設定する。
+    //fEqualToが省略された場合、二要素が全く同一のオブジェクトかどうかによって評価される。
+    var i, iLen;
+    if(!(b instanceof Array) || this.length !== b.length){
+        return false;
+    }
+    iLen = this.length;
+    if(fEqualTo == undefined){
+        for(i = 0; i < iLen; i++){
+            if(this[i] !== b[i]){
+                break;
+            }
+        }
+    } else{
+        for(i = 0; i < iLen; i++){
+            if(fEqualTo(this[i], b[i])){
+                break;
+            }
+        }
+    }
+    if(i === iLen){
+        return true;
+    }
+    return false;
+}
+*/
 Array.prototype.includes = function (obj, fEqualTo) {
+    //含まれている場合は配列内のそのオブジェクトを返す
+    //fEqualToは省略可能で、評価関数fEqualTo(array[i], obj)を設定する。
     if (fEqualTo == undefined) {
         for (var i = 0, len = this.length; i < len; i++) {
             if (this[i] == obj) {
@@ -51,7 +129,31 @@ Array.prototype.includes = function (obj, fEqualTo) {
     }
     return false;
 };
+/*
+Array.prototype.getIndex = function(obj, fEqualTo){
+    // 含まれている場合は配列内におけるそのオブジェクトの添字を返す。
+    // 見つからなかった場合、-1を返す。
+    //fEqualToは省略可能で、評価関数fEqualTo(array[i], obj)を設定する。
+    if(fEqualTo == undefined){
+        for(var i = 0, len = this.length; i < len; i++){
+            if(this[i] == obj){
+                return i;
+            }
+        }
+    } else{
+        for(var i = 0, len = this.length; i < len; i++){
+            if(fEqualTo(this[i], obj)){
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+*/
 Array.prototype.getAllMatched = function (obj, fEqualTo) {
+    // 評価関数が真となる要素をすべて含んだ配列を返す。
+    // 返すべき要素がない場合は空配列を返す。
+    // fEqualToは省略可能で、評価関数fEqualTo(array[i], obj)を設定する。
     var retArray = new Array();
     if (fEqualTo == undefined) {
         for (var i = 0, len = this.length; i < len; i++) {
@@ -69,7 +171,55 @@ Array.prototype.getAllMatched = function (obj, fEqualTo) {
     }
     return retArray;
 };
+/*
+Array.prototype.last = function(n){
+    var n = (n === undefined) ? 1 : n;
+    return this[this.length - n];
+}
+Array.prototype.search2DLineIndex = function(column, obj, fEqualTo){
+    //与えられた配列を二次元配列として解釈し
+    //array[n][column]がobjと等価になる最初の行nを返す。
+    //fEqualToは省略可能で、評価関数fEqualTo(array[n][column], obj)を設定する。
+    //該当する行がなかった場合、戻り値はundefinedとなる。
+    if(fEqualTo == undefined){
+        for(var i = 0, iLen = this.length; i < iLen; i++){
+            if(this[i] instanceof Array && this[i][column] == obj){
+                return i;
+            }
+        }
+    } else{
+        for(var i = 0, iLen = this.length; i < iLen; i++){
+            if(this[i] instanceof Array && fEqualTo(this[i][column], obj)){
+                return i;
+            }
+        }
+    }
+    return undefined;
+}
+Array.prototype.search2DObject = function(searchColumn, retvColumn, obj, fEqualTo){
+    //与えられた配列を二次元配列として解釈し
+    //array[n][searchColumn]がobjと等価になる最初の行のオブジェクトarray[n][retvColumn]を返す。
+    //fEqualToは省略可能で、評価関数fEqualTo(array[n][searchColumn], obj)を設定する。
+    //該当する行がなかった場合、戻り値はundefinedとなる。
+    if(fEqualTo == undefined){
+        for(var i = 0, iLen = this.length; i < iLen; i++){
+            if(this[i] instanceof Array && this[i][searchColumn] == obj){
+                return this[i][retvColumn];
+            }
+        }
+    } else{
+        for(var i = 0, iLen = this.length; i < iLen; i++){
+            if(this[i] instanceof Array && fEqualTo(this[i][searchColumn], obj)){
+                return this[i][retvColumn];
+            }
+        }
+    }
+    return undefined;
+}
+*/
 Array.prototype.pushUnique = function (obj, fEqualTo) {
+    //値が既に存在する場合は追加しない。評価関数fEqualTo(array[i], obj)を設定することができる。
+    //結果的に配列内にあるオブジェクトが返される。
     var o = this.includes(obj, fEqualTo);
     if (!o) {
         this.push(obj);
@@ -78,6 +228,8 @@ Array.prototype.pushUnique = function (obj, fEqualTo) {
     return o;
 };
 Array.prototype.stableSort = function (f) {
+    // http://blog.livedoor.jp/netomemo/archives/24688861.html
+    // Chrome等ではソートが必ずしも安定ではないので、この関数を利用する。
     if (f == undefined) {
         f = function (a, b) { return a - b; };
     }
@@ -97,10 +249,125 @@ Array.prototype.stableSort = function (f) {
         delete this[i].__id__;
     }
 };
+/*
+Array.prototype.splitByArray = function(separatorList){
+    //Array中の文字列をseparatorList内の文字列でそれぞれで分割し、それらの文字列が含まれた配列を返す。
+    var retArray = new Array();
+    
+    for(var i = 0, iLen = this.length; i < iLen; i++){
+        retArray = retArray.concat(this[i].splitByArray(separatorList));
+    }
+    
+    return retArray;
+}
+*/
+Array.prototype.propertiesNamed = function (pName) {
+    //Array内の各要素のプロパティpNameのリストを返す。
+    var retArray = new Array();
+    for (var i = 0, iLen = this.length; i < iLen; i++) {
+        retArray.push(this[i][pName]);
+    }
+    return retArray;
+};
+//文字列関連
 String.prototype.replaceAll = function (org, dest) {
+    //String中にある文字列orgを文字列destにすべて置換する。
+    //http://www.syboos.jp/webjs/doc/string-replace-and-replaceall.html
     return this.split(org).join(dest);
 };
+/*
+String.prototype.compareLeftHand = function (search){
+    //前方一致長を求める。
+    for(var i = 0; search.charAt(i) != ""; i++){
+        if(search.charAt(i) != this.charAt(i)){
+            break;
+        }
+    }
+    return i;
+}
+
+String.prototype.splitByArray = function(separatorList){
+    //リスト中の文字列それぞれで分割された配列を返す。
+    //separatorはそれ以前の文字列の末尾に追加された状態で含まれる。
+    //"abcdefg".splitByArray(["a", "e", "g"]);
+    //	= ["a", "bcde", "fg"]
+    var retArray = new Array();
+    retArray[0] = this;
+    
+    for(var i = 0; i < separatorList.length; i++){
+        var tmpArray = new Array();
+        for(var k = 0; k < retArray.length; k++){
+            tmpArray[k] = retArray[k].split(separatorList[i]);
+            if(tmpArray[k][tmpArray[k].length - 1] == ""){
+                tmpArray[k].splice(tmpArray[k].length - 1, 1);
+                if(tmpArray[k] && tmpArray[k].length > 0){
+                    for(var m = 0; m < tmpArray[k].length; m++){
+                        tmpArray[k][m] += separatorList[i];
+                    }
+                }
+            } else{
+                for(var m = 0; m < tmpArray[k].length - 1; m++){
+                    tmpArray[k][m] += separatorList[i];
+                }
+            }
+        }
+        retArray = new Array();
+        retArray = retArray.concat.apply(retArray, tmpArray);
+    }
+    
+    if(retArray.length == 0){
+        // https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/String/split
+        //文字列が空であるとき、split メソッドは、空の配列ではなく、1 つの空文字列を含む配列を返します。
+        retArray.push("");
+    }
+    
+    return retArray;
+}
+
+String.prototype.splitByArraySeparatorSeparated = function(separatorList){
+    //リスト中の文字列それぞれで分割された配列を返す。
+    //separatorも分割された状態で含まれる。
+    //"abcdefg".splitByArraySeparatorSeparated(["a", "e", "g"]);
+    //	= ["a", "bcd", "e", "f", "g"]
+    var retArray = new Array();
+    retArray[0] = this;
+    
+    for(var i = 0; i < separatorList.length; i++){
+        var tmpArray = new Array();
+        for(var k = 0; k < retArray.length; k++){
+            var tmpArraySub = retArray[k].split(separatorList[i]);
+            tmpArray[k] = new Array();
+            for(var m = 0, mLen = tmpArraySub.length - 1; m < mLen; m++){
+                if(tmpArraySub[m] != ""){
+                    tmpArray[k].push(tmpArraySub[m]);
+                }
+                tmpArray[k].push(separatorList[i]);
+            }
+            if(tmpArraySub[tmpArraySub.length - 1] != ""){
+                tmpArray[k].push(tmpArraySub[m]);
+            }
+        }
+        retArray = new Array();
+        retArray = retArray.concat.apply(retArray, tmpArray);
+    }
+    
+    if(retArray.length == 0){
+        // https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/String/split
+        //文字列が空であるとき、split メソッドは、空の配列ではなく、1 つの空文字列を含む配列を返します。
+        retArray.push("");
+    }
+    
+    return retArray;
+}
+*/
 String.prototype.splitByArraySeparatorSeparatedLong = function (separatorList) {
+    //リスト中の文字列それぞれで分割された配列を返す。
+    //separatorも分割された状態で含まれる。
+    //separatorListの前の方にあるseparatorは、後方のseparatorによって分割されない。
+    //"abcdefgcdefg".splitByArraySeparatorSeparatedLong(["bcde", "cd", "f"]);
+    //	= ["a", "bcde", "f", "g", "cd", "e", "f", "g"]
+    //"for (i = 0; i != 15; i++) {".splitByArraySeparatorSeparatedLong(["!=", "(", ")", "="]);
+    //	= ["for ", "(", "i ", "=", " 0; i ", "!=", " 15; i++", ")", " {"]
     var retArray = new Array();
     var checkArray = new Array();
     retArray[0] = this;
@@ -137,71 +404,122 @@ String.prototype.splitByArraySeparatorSeparatedLong = function (separatorList) {
         checkArray = checkArray.concat.apply(checkArray, tmpCheckArray);
     }
     if (retArray.length == 0) {
+        // https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/String/split
+        //文字列が空であるとき、split メソッドは、空の配列ではなく、1 つの空文字列を含む配列を返します。
         retArray.push("");
     }
     return retArray;
 };
+/*
+String.prototype.trim = function(str){
+    return this.replace(/^[ 　	]+|[ 　	]+$/g, "").replace(/\n$/g, "");
+}
+//http://d.hatena.ne.jp/favril/20090514/1242280476
+String.prototype.isKanjiAt = function(index){
+    var u = this.charCodeAt(index);
+    if( (0x4e00  <= u && u <= 0x9fcf) ||	// CJK統合漢字
+        (0x3400  <= u && u <= 0x4dbf) ||	// CJK統合漢字拡張A
+        (0x20000 <= u && u <= 0x2a6df) ||	// CJK統合漢字拡張B
+        (0xf900  <= u && u <= 0xfadf) ||	// CJK互換漢字
+        (0x2f800 <= u && u <= 0x2fa1f)){ 	// CJK互換漢字補助
+        return true;
+    }
+    return false;
+}
+String.prototype.isHiraganaAt = function(index){
+    var u = this.charCodeAt(index);
+    if(0x3040 <= u && u <= 0x309f){
+        return true;
+    }
+    return false;
+}
+String.prototype.isKatakanaAt = function(index){
+    var u = this.charCodeAt(index);
+    if(0x30a0 <= u && u <= 0x30ff){
+        return true;
+    }
+    return false;
+}
+String.prototype.isHankakuKanaAt = function(index){
+    var u = this.charCodeAt(index);
+    if(0xff61 <= u && u <= 0xff9f){
+        return true;
+    }
+    return false;
+}
+*/
 String.prototype.escapeForHTML = function () {
     var e = document.createElement('div');
     e.appendChild(document.createTextNode(this));
     return e.innerHTML;
 };
+/*
+
+// http://stackoverflow.com/questions/641857/javascript-window-resize-event
+// addEvent(window, "resize", function_reference);
+addEvent = function(elem, type, eventHandle) {
+    if (elem == null || typeof(elem) == 'undefined') return;
+    if ( elem.addEventListener ) {
+        elem.addEventListener( type, eventHandle, false );
+    } else if ( elem.attachEvent ) {
+        elem.attachEvent( "on" + type, eventHandle );
+    } else {
+        elem["on"+type]=eventHandle;
+    }
+};
+*/
 /// <reference path="./lib/jquery.d.ts" />
+/*
+document.addEventListener('mouseup',function(ev){
+    var selection = getSelection();
+    if(selection.rangeCount > 0){
+        var range = selection.getRangeAt(0);
+        if(range.collapsed){
+            return;
+        }
+        //新しいspan要素を作る
+        var newspan = document.createElement('span');
+        newspan.onclick = function(){
+            openWordMenu(newspan);
+        }
+        newspan.text = range.toString();
+        //background-colorを設定
+        newspan.style.backgroundColor="#ffff00";
+        //
+        var df = range.extractContents();
+        console.log(df)
+        newspan.appendChild(df);
+        range.insertNode(newspan);
+    }
+},false);
+*/
+var WordType;
+(function (WordType) {
+    WordType[WordType["NotFound"] = 0] = "NotFound";
+    WordType[WordType["OnlyInOwn"] = 1] = "OnlyInOwn";
+    WordType[WordType["OnlyInDocument"] = 2] = "OnlyInDocument";
+    WordType[WordType["SamePerception"] = 3] = "SamePerception";
+    WordType[WordType["DifferentPerception"] = 4] = "DifferentPerception";
+})(WordType || (WordType = {}));
 var Stempad = (function () {
+    //
     function Stempad(ediv) {
-        this.dictA = [
-            ["LMD3UwP5Twms9hnW3yUHAQ", "集合", "ある特定のはっきり識別できる条件に合うものを一まとめにして考えた、全体。"],
-            ["67SNKR52QYqtrZH57SqMNA", "概念", "事象に対して、抽象化・ 普遍化してとらえた、思考の基礎となる基本的な形態として、脳の機能によってとらえたもの。"],
-            ["mp2ZnRn/T9WSrVixhzGVdA", "数学", "数および図形についての学問"],
-        ];
-        this.dictB = [
-            ["k8sxescVRqK8YY+DsB3B8Q", "集合", "一か所に集まる、または集めること。"],
-            ["67SNKR52QYqtrZH57SqMNA", "概念", "事象に対して、抽象化・ 普遍化してとらえた、思考の基礎となる基本的な形態として、脳の機能によってとらえたもの。"],
-            ["mp2ZnRn/T9WSrVixhzGVdA", "数学", "数および図形についての学問"],
-        ];
+        this.dictA = new Array();
+        this.dictB = new Array();
         var that = this;
+        //
         this.editorDiv = ediv;
         this.editorDiv.onclick = function (e) { e.stopPropagation(); };
-        this.editorDiv.innerHTML = "集合は、集合論のみならず現代数学全体における最も基本的な概念の一つであり、現代数学のほとんどが集合と写像の言葉で書かれていると言ってよい。";
-        this.markupBasedOnDictionary([this.dictA, this.dictB]);
-        this.showDictionary();
-        document.body.onclick = function () { that.markupBasedOnDictionary([that.dictA, that.dictB]); };
+        this.setDictionary();
+        document.body.onclick = function () { that.markupBasedOnDictionary(); };
     }
     Stempad.prototype.openWordMenu = function (elem) {
         console.log(elem);
         console.log(elem.text);
     };
-    Stempad.prototype.markupBasedOnDictionary = function (dicts) {
-        var text = this.getEditorText();
-        console.log(text);
-        var wList = new Array();
-        for (var i = 0; i < dicts.length; i++) {
-            for (var k = 0; k < dicts[i].length; k++) {
-                wList.pushUnique(dicts[i][k][1]);
-            }
-        }
-        wList.stableSort(function (a, b) {
-            return a.length - b.length;
-        });
-        var separated = text.splitByArraySeparatorSeparatedLong(wList);
-        for (var i = 0; i < separated.length; i++) {
-            if (wList.includes(separated[i])) {
-                var idInDictA = this.dictA.includes(separated[i], function (a, b) { return a[1] == b; })[0];
-                var idInDictB = this.dictB.includes(separated[i], function (a, b) { return a[1] == b; })[0];
-                if (idInDictA === idInDictB) {
-                    separated[i] = '<span style="background-color: #c0ffee">' + separated[i].escapeForHTML() + "</span>";
-                }
-                else {
-                    separated[i] = '<span style="background-color: #ffc0ee">' + separated[i].escapeForHTML() + "</span>";
-                }
-            }
-            else {
-                separated[i] = separated[i].escapeForHTML();
-            }
-        }
-        text = separated.join("");
-        this.setEditorText(text);
-    };
+    //
+    // Editor
+    //
     Stempad.prototype.getEditorText = function () {
         var text = "";
         if (this.editorDiv.hasChildNodes()) {
@@ -217,7 +535,11 @@ var Stempad = (function () {
         }
         return text;
     };
-    Stempad.prototype.setEditorText = function (htmlText) {
+    Stempad.prototype.setEditorText = function (plainText) {
+        this.setEditorHTMLText(plainText.escapeForHTML());
+        this.markupBasedOnDictionary();
+    };
+    Stempad.prototype.setEditorHTMLText = function (htmlText) {
         this.editorDiv.innerHTML = "";
         var rowList = htmlText.split("\n");
         for (var i = 0; i < rowList.length; i++) {
@@ -227,21 +549,40 @@ var Stempad = (function () {
         }
         return;
     };
-    Stempad.prototype.showDictionary = function () {
-        var dictBasedID = this.dictA.unionWith(this.dictB, function (a, b) {
+    //
+    // Dictionary
+    //
+    Stempad.prototype.setDictionary = function (dictOwn, dictDocument) {
+        this.dictA = dictOwn ? dictOwn : this.dictA;
+        this.dictB = dictDocument ? dictDocument : this.dictB;
+        //
+        this.dictBasedID = this.dictA.unionWith(this.dictB, function (a, b) {
             return (a[0] === b[0]);
         });
-        var dictBasedWord = this.dictA.unionWith(this.dictB, function (a, b) {
+        this.dictBasedWord = this.dictA.unionWith(this.dictB, function (a, b) {
             return (a[1] === b[1]);
         });
-        console.log(dictBasedID);
-        console.log(dictBasedWord);
+        //
+        this.WordListInDict = this.dictBasedWord.propertiesNamed(1);
+        this.WordListInDict.stableSort(function (a, b) {
+            return a.length - b.length;
+        });
+        this.showDictionary();
+    };
+    Stempad.prototype.showDictionary = function () {
         var elem = document.getElementById("dict");
         var htmlSrc = "";
-        for (var i = 0; i < dictBasedWord.length; i++) {
+        var showWordCard = function (wt, c) {
+            htmlSrc += '<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 ' + c + '"><dl>';
+            htmlSrc += "<dt>" + wt[1].escapeForHTML() + "</dt>";
+            htmlSrc += "<dd>" + wt[2].escapeForHTML() + "</dd>";
+            htmlSrc += '</dl></div>';
+        };
+        //
+        for (var i = 0; i < this.dictBasedWord.length; i++) {
             htmlSrc += '<div class="row heightLineParent">';
-            var w = dictBasedWord[i][1];
-            var idList = dictBasedID.getAllMatched(w, function (a, b) {
+            var w = this.dictBasedWord[i][1];
+            var idList = this.dictBasedID.getAllMatched(w, function (a, b) {
                 return a[1] === b;
             });
             if (idList.length == 1) {
@@ -249,53 +590,116 @@ var Stempad = (function () {
                 var b = this.dictB.includes(w, function (a, b) { return (a[1] === b); });
                 if (a && b) {
                     htmlSrc += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3"></div>';
-                    htmlSrc += '<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 dictCommon"><dl>';
-                    htmlSrc += "<dt>" + a[1].escapeForHTML() + "</dt>";
-                    htmlSrc += "<dd>" + a[2].escapeForHTML() + "</dd>";
-                    htmlSrc += '</dl></div>';
+                    showWordCard(a, "dictCommon");
                 }
                 else if (a) {
-                    var e = this.dictB.includes(w, function (a, b) { return (a[1] === b); });
-                    htmlSrc += '<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 dictA"><dl>';
-                    htmlSrc += "<dt>" + a[1].escapeForHTML() + "</dt>";
-                    htmlSrc += "<dd>" + a[2].escapeForHTML() + "</dd>";
-                    htmlSrc += '</dl></div>';
+                    showWordCard(a, "dictA");
                 }
                 else {
                     htmlSrc += '<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6"></div>';
-                    var e = this.dictB.includes(w, function (a, b) { return (a[1] === b); });
-                    htmlSrc += '<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 dictB"><dl>';
-                    htmlSrc += "<dt>" + b[1].escapeForHTML() + "</dt>";
-                    htmlSrc += "<dd>" + b[2].escapeForHTML() + "</dd>";
-                    htmlSrc += '</dl></div>';
+                    showWordCard(b, "dictB");
                 }
             }
             else {
                 var e = this.dictA.includes(w, function (a, b) { return (a[1] === b); });
-                htmlSrc += '<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 dictA"><dl>';
-                htmlSrc += "<dt>" + e[1].escapeForHTML() + "</dt>";
-                htmlSrc += "<dd>" + e[2].escapeForHTML() + "</dd>";
-                htmlSrc += '</dl></div>';
+                showWordCard(e, "dictA");
                 var e = this.dictB.includes(w, function (a, b) { return (a[1] === b); });
-                htmlSrc += '<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 dictB"><dl>';
-                htmlSrc += "<dt>" + e[1].escapeForHTML() + "</dt>";
-                htmlSrc += "<dd>" + e[2].escapeForHTML() + "</dd>";
-                htmlSrc += '</dl></div>';
+                showWordCard(e, "dictB");
             }
             htmlSrc += '</div>';
         }
         elem.innerHTML = htmlSrc;
         $(".heightLineParent>div").heightLine();
     };
+    Stempad.prototype.getWordType = function (w) {
+        var t = this.dictBasedWord.includes(w, function (a, b) { return (a[1] === b); });
+        if (!t) {
+            return WordType.NotFound;
+        }
+        t = t[1];
+        var a = this.dictA.includes(t, function (a, b) { return (a[1] === b); });
+        var b = this.dictB.includes(t, function (a, b) { return (a[1] === b); });
+        if (a && b) {
+            if (a[0] === b[0]) {
+                return WordType.SamePerception;
+            }
+            else {
+                return WordType.DifferentPerception;
+            }
+        }
+        else if (a) {
+            return WordType.OnlyInOwn;
+        }
+        else {
+            return WordType.OnlyInDocument;
+        }
+    };
+    Stempad.prototype.markupBasedOnDictionary = function () {
+        var text = this.getEditorText();
+        var separated = text.splitByArraySeparatorSeparatedLong(this.WordListInDict);
+        for (var i = 0; i < separated.length; i++) {
+            var type = this.getWordType(separated[i]);
+            if (type == WordType.SamePerception) {
+                separated[i] = '<span style="background-color: #c0ffee">' + separated[i].escapeForHTML() + "</span>";
+            }
+            else if (type == WordType.DifferentPerception) {
+                separated[i] = '<span style="background-color: #ffc0ee">' + separated[i].escapeForHTML() + "</span>";
+            }
+            else {
+                separated[i] = separated[i].escapeForHTML();
+            }
+        }
+        text = separated.join("");
+        this.setEditorHTMLText(text);
+    };
     return Stempad;
 })();
 $(function () {
     var stempad = new Stempad(document.getElementById("editorbody"));
+    stempad.setDictionary([
+        ["LMD3UwP5Twms9hnW3yUHAQ", "集合", "ある特定のはっきり識別できる条件に合うものを一まとめにして考えた、全体。"],
+        ["67SNKR52QYqtrZH57SqMNA", "概念", "事象に対して、抽象化・ 普遍化してとらえた、思考の基礎となる基本的な形態として、脳の機能によってとらえたもの。"],
+        ["mp2ZnRn/T9WSrVixhzGVdA", "数学", "数および図形についての学問"],
+    ], [
+        ["k8sxescVRqK8YY+DsB3B8Q", "集合", "一か所に集まる、または集めること。"],
+        ["67SNKR52QYqtrZH57SqMNA", "概念", "事象に対して、抽象化・ 普遍化してとらえた、思考の基礎となる基本的な形態として、脳の機能によってとらえたもの。"],
+        ["mp2ZnRn/T9WSrVixhzGVdA", "数学", "数および図形についての学問"],
+    ]);
+    stempad.setEditorText("集合は、集合論のみならず現代数学全体における最も基本的な概念の一つであり、現代数学のほとんどが集合と写像の言葉で書かれていると言ってよい。");
 });
+/*
+function getCaretCharacterOffsetWithin(element) {
+    var caretOffset = 0;
+    var doc = element.ownerDocument || element.document;
+    var win = doc.defaultView || doc.parentWindow;
+    var sel;
+    if (typeof win.getSelection != "undefined") {
+        sel = win.getSelection();
+        if (sel.rangeCount > 0) {
+            var range = win.getSelection().getRangeAt(0);
+            var preCaretRange = range.cloneRange();
+            preCaretRange.selectNodeContents(element);
+            preCaretRange.setEnd(range.endContainer, range.endOffset);
+            caretOffset = preCaretRange.toString().length;
+        }
+    } else if ( (sel = doc.selection) && sel.type != "Control") {
+        var textRange = sel.createRange();
+        var preCaretTextRange = doc.body.createTextRange();
+        preCaretTextRange.moveToElementText(element);
+        preCaretTextRange.setEndPoint("EndToEnd", textRange);
+        caretOffset = preCaretTextRange.text.length;
+    }
+    return caretOffset;
+}
+*/
+//
+// UUID
+//
 var UUID = (function () {
     function UUID() {
     }
     UUID.verifyUUID = function (uuid) {
+        // retv: normalized UUID or false.
         if (!uuid || uuid.length != (32 + 4)) {
             return false;
         }
