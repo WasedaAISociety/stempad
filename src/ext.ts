@@ -3,30 +3,24 @@
 //
 
 //継承機能
-Function.prototype.extend = function(baseConstructor, newPrototype){
-	// http://sourceforge.jp/projects/h58pcdgame/scm/git/GameScriptCoreLibrary/blobs/master/www/corelib/jsbase.js
-	//最初にベースクラスのプロトタイプを引き継ぐ。
-	var F = function(){};
-	F.prototype = baseConstructor.prototype;
-	this.prototype = new F();
-	//新たなプロトタイプを追加・上書きする。
-	if(newPrototype){
-		for(var prop in newPrototype){
-			this.prototype[prop] = newPrototype[prop];
-		}
-	}
-	//コンストラクタを設定
-	this.prototype.constructor = this;
-	//ベースクラスのコンストラクタを設定
-	this.base = baseConstructor;
-	return this;
-};
 
-//配列関連
-Array.prototype.removeAllObject = function(anObject){
+interface FEqualToType{(a:any, b:any):any};
+
+interface Array<T>
+{
+	removeAllObject(anObject: any): boolean;
+	removeAnObject(anObject: any, fEqualTo?: FEqualToType): boolean;
+	unionWith(b: Array<any>, fEqualTo?: FEqualToType): Array<any>;
+	includes(obj: any, fEqualTo?: FEqualToType): any;
+	getAllMatched(obj: any, fEqualTo?: FEqualToType): Array<any>;
+	pushUnique(obj: any, fEqualTo?: FEqualToType): any;
+	stableSort(f: FEqualToType): void;
+}
+
+Array.prototype.removeAllObject = function(anObject:any){
 	//Array中にある全てのanObjectを削除し、空いた部分は前につめる。
 	//戻り値は削除が一回でも実行されたかどうか
-	var ret = false;
+	var ret:boolean = false;
 	for(var i = 0; i < this.length; i++){
 		if(this[i] == anObject){
 			this.splice(i, 1);
@@ -36,7 +30,7 @@ Array.prototype.removeAllObject = function(anObject){
 	}
 	return ret;
 }
-Array.prototype.removeAnObject = function(anObject, fEqualTo){
+Array.prototype.removeAnObject = function(anObject:any, fEqualTo?:FEqualToType){
 	//Array中にある最初のanObjectを削除し、空いた部分は前につめる。
 	//fEqualToは省略可能で、評価関数fEqualTo(array[i], obj)を設定する。
 	//戻り値は削除が実行されたかどうか
@@ -51,6 +45,8 @@ Array.prototype.removeAnObject = function(anObject, fEqualTo){
 	}
 	return false;
 }
+
+/*
 Array.prototype.removeByIndex = function(index, length){
 	//Array[index]を削除し、空いた部分は前につめる。
 	if(length === undefined){
@@ -88,7 +84,9 @@ Array.prototype.intersectionWith = function(b, fEqualTo){
 	}
 	return r;
 }
-Array.prototype.unionWith = function(b, fEqualTo){
+*/
+Array.prototype.unionWith = function(b: Array<any>, fEqualTo?: FEqualToType): Array<any>
+{
 	//和集合（OR）を求める
 	//fEqualToは省略可能で、評価関数fEqualTo(a[i], b[j])を設定する。
 	var r = new Array();
@@ -99,6 +97,7 @@ Array.prototype.unionWith = function(b, fEqualTo){
 	}
 	return this.concat(r);
 }
+/*
 Array.prototype.isEqualTo = function(b, fEqualTo){
 	//retv: false or true.
 	//二つの配列が互いに同じ要素を同じ個数だけ持つか調べる。
@@ -127,7 +126,8 @@ Array.prototype.isEqualTo = function(b, fEqualTo){
 	}
 	return false;
 }
-Array.prototype.includes = function(obj, fEqualTo){
+*/
+Array.prototype.includes = function(obj: any, fEqualTo?: FEqualToType){
 	//含まれている場合は配列内のそのオブジェクトを返す
 	//fEqualToは省略可能で、評価関数fEqualTo(array[i], obj)を設定する。
 	if(fEqualTo == undefined){
@@ -145,6 +145,7 @@ Array.prototype.includes = function(obj, fEqualTo){
 	}
 	return false;
 }
+/*
 Array.prototype.getIndex = function(obj, fEqualTo){
 	// 含まれている場合は配列内におけるそのオブジェクトの添字を返す。
 	// 見つからなかった場合、-1を返す。
@@ -164,11 +165,13 @@ Array.prototype.getIndex = function(obj, fEqualTo){
 	}
 	return -1;
 }
-Array.prototype.getAllMatched = function(obj, fEqualTo){
+*/
+Array.prototype.getAllMatched = function(obj: any, fEqualTo?: FEqualToType): Array<any>
+{
 	// 評価関数が真となる要素をすべて含んだ配列を返す。
 	// 返すべき要素がない場合は空配列を返す。
 	// fEqualToは省略可能で、評価関数fEqualTo(array[i], obj)を設定する。
-	var retArray = new Array();
+	var retArray:Array<any> = new Array();
 	if(fEqualTo == undefined){
 		for(var i = 0, len = this.length; i < len; i++){
 			if(this[i] == obj){
@@ -184,6 +187,7 @@ Array.prototype.getAllMatched = function(obj, fEqualTo){
 	}
 	return retArray;
 }
+/*
 Array.prototype.last = function(n){
 	var n = (n === undefined) ? 1 : n;
 	return this[this.length - n];
@@ -228,7 +232,8 @@ Array.prototype.search2DObject = function(searchColumn, retvColumn, obj, fEqualT
 	}
 	return undefined;
 }
-Array.prototype.pushUnique = function(obj, fEqualTo){
+*/
+Array.prototype.pushUnique = function(obj: any, fEqualTo?: FEqualToType){
 	//値が既に存在する場合は追加しない。評価関数fEqualTo(array[i], obj)を設定することができる。
 	//結果的に配列内にあるオブジェクトが返される。
 	var o = this.includes(obj, fEqualTo);
@@ -238,16 +243,16 @@ Array.prototype.pushUnique = function(obj, fEqualTo){
 	}
 	return o;
 }
-Array.prototype.stableSort = function(f){
+Array.prototype.stableSort = function(f: FEqualToType){
 	// http://blog.livedoor.jp/netomemo/archives/24688861.html
 	// Chrome等ではソートが必ずしも安定ではないので、この関数を利用する。
 	if(f == undefined){
-		f = function(a,b){ return a - b; };
+		f = function(a: any, b: any){ return a - b; };
 	}
 	for(var i = 0; i < this.length; i++){
 		this[i].__id__ = i;
 	}
-	this.sort.call(this, function(a,b){
+	this.sort.call(this, function(a: any, b: any){
 		var ret = f(a, b);
 		if(ret == 0){
 			return (a.__id__ > b.__id__) ? 1 : -1;
@@ -259,6 +264,7 @@ Array.prototype.stableSort = function(f){
 		delete this[i].__id__;
 	}
 }
+/*
 Array.prototype.splitByArray = function(separatorList){
 	//Array中の文字列をseparatorList内の文字列でそれぞれで分割し、それらの文字列が含まれた配列を返す。
 	var retArray = new Array();
@@ -342,13 +348,22 @@ Array.prototype.logEachPropertiesNamed = function(pnames, logfunc,　separator, 
 Array.prototype.copy = function(){
 	return (new Array()).concat(this);
 }
+*/
+
+interface String
+{
+	splitByArraySeparatorSeparatedLong(separatorList: Array<string>): Array<string>;
+	replaceAll(org: string, dest: string): string;
+	escapeForHTML(): string;
+}
 
 //文字列関連
-String.prototype.replaceAll = function(org, dest){
+String.prototype.replaceAll = function(org: string, dest: string){
 	//String中にある文字列orgを文字列destにすべて置換する。
 	//http://www.syboos.jp/webjs/doc/string-replace-and-replaceall.html
 	return this.split(org).join(dest);
 }
+/*
 String.prototype.compareLeftHand = function (search){
 	//前方一致長を求める。
 	for(var i = 0; search.charAt(i) != ""; i++){
@@ -358,6 +373,7 @@ String.prototype.compareLeftHand = function (search){
 	}
 	return i;
 }
+
 String.prototype.splitByArray = function(separatorList){
 	//リスト中の文字列それぞれで分割された配列を返す。
 	//separatorはそれ以前の文字列の末尾に追加された状態で含まれる。
@@ -431,8 +447,8 @@ String.prototype.splitByArraySeparatorSeparated = function(separatorList){
 	
 	return retArray;
 }
-
-String.prototype.splitByArraySeparatorSeparatedLong = function(separatorList){
+*/
+String.prototype.splitByArraySeparatorSeparatedLong = function(separatorList: Array<string>){
 	//リスト中の文字列それぞれで分割された配列を返す。
 	//separatorも分割された状態で含まれる。
 	//separatorListの前の方にあるseparatorは、後方のseparatorによって分割されない。
@@ -484,7 +500,7 @@ String.prototype.splitByArraySeparatorSeparatedLong = function(separatorList){
 	
 	return retArray;
 }
-
+/*
 String.prototype.trim = function(str){
 	return this.replace(/^[ 　	]+|[ 　	]+$/g, "").replace(/\n$/g, "");
 }
@@ -521,11 +537,13 @@ String.prototype.isHankakuKanaAt = function(index){
 	}
 	return false;
 }
+*/
 String.prototype.escapeForHTML = function(){
 	var e = document.createElement('div');
 	e.appendChild(document.createTextNode(this));
 	return e.innerHTML;
 }
+/*
 
 // http://stackoverflow.com/questions/641857/javascript-window-resize-event
 // addEvent(window, "resize", function_reference);
@@ -539,3 +557,4 @@ addEvent = function(elem, type, eventHandle) {
         elem["on"+type]=eventHandle;
     }
 };
+*/

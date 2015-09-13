@@ -8,9 +8,8 @@
 		<link rel="stylesheet" type="text/css" href="css/stempad.css">
 		<title>stempad</title>
 		<script type="text/javascript" src="./js/jquery-1.11.3.min.js"></script>
-		<script type="text/javascript" src="./ext.js"></script>
-		<script type="text/javascript" src="./uuid.js"></script>
-		<script type="text/javascript" src="./stempad.js"></script>
+		<script type="text/javascript" src="./js/jquery.heightLine.js"></script>
+		<script type="text/javascript" src="./stempad.min.js"></script>
 	</head>
 	<body>
 		<div class="navbar navbar-fixed-top" role="navigation">
@@ -23,14 +22,15 @@
 		<div class="container" style="padding-top: 64px;">
 			<div id="editorbody" contenteditable="true"></div>
 			<div class="row">
-				<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+				<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
 					<h4>あなたの辞書</h4>
-					<div id="dictA"></div>
 				</div>
-				<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+				<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
 					<h4>この文書の辞書</h4>
-					<div id="dictB"></div>
 				</div>
+			</div>
+			<div id="dict">
+				
 			</div>
 		</div>
 		
