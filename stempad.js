@@ -612,7 +612,11 @@ var Stempad = (function () {
             htmlSrc += '</div>';
         }
         elem.innerHTML = htmlSrc;
-        $(".heightLineParent>div").heightLine();
+        //
+        var list = $(".heightLineParent");
+        for (var i = 0; i < list.length; i++) {
+            $(list[i].childNodes).heightLine();
+        }
     };
     Stempad.prototype.getWordType = function (w) {
         var t = this.dictBasedWord.includes(w, function (a, b) { return (a[1] === b); });

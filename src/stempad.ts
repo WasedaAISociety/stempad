@@ -159,7 +159,11 @@ class Stempad
 			htmlSrc += '</div>';
 		}
 		elem.innerHTML = htmlSrc;
-		$(".heightLineParent>div").heightLine();
+		//
+		var list = $(".heightLineParent");
+		for(var i = 0; i < list.length; i++){
+			$(list[i].childNodes).heightLine();
+		}
 	}
 	getWordType(w: string): WordType
 	{
