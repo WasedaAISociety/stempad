@@ -42,6 +42,7 @@ class Stempad
 {
 	editorDiv: HTMLElement;
 	perceptLevelDiv: HTMLElement;
+	perceptNotFoundLevelDiv: HTMLElement;
 	perceptLevelTextDiv: HTMLElement;
 	dictA: Array<any> = new Array<any>();
 	dictB: Array<any> = new Array<any>();
@@ -50,11 +51,12 @@ class Stempad
 	wordListInDict: Array<string>;
 	agreementRate: number = 0;
 	//
-	constructor(ediv: HTMLElement, pdiv: HTMLElement, ptdiv: HTMLElement){
+	constructor(ediv: HTMLElement, pdiv: HTMLElement, pndiv: HTMLElement, ptdiv: HTMLElement){
 		var that:Stempad = this;
 		//
 		this.editorDiv = ediv;
 		this.perceptLevelDiv = pdiv;
+		this.perceptNotFoundLevelDiv = pndiv;
 		this.perceptLevelTextDiv = ptdiv;
 		this.editorDiv.onclick = function(e: any){ e.stopPropagation(); };
 		this.setDictionary();
@@ -148,7 +150,7 @@ class Stempad
 					showWordCard(a, "dictA");
 				} else{
 					htmlSrc += '<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6"></div>';
-					showWordCard(b, "dictB");
+					showWordCard(b, "dictB onlyInDocument");
 				}
 			} else{
 				var e = this.dictA.includes(w, function(a, b){ return (a[1] === b); });
@@ -192,6 +194,7 @@ class Stempad
 		var separated = text.splitByArraySeparatorSeparatedLong(this.wordListInDict);
 		var wordCount = 0;
 		var samePerceptionCount = 0;
+		var perceptionNotFoundCount = 0;
 		for(var i = 0; i < separated.length; i++){
 			var type: WordType = this.getWordType(separated[i]);
 			if(type == WordType.SamePerception){
@@ -201,6 +204,10 @@ class Stempad
 			} else if(type == WordType.DifferentPerception){
 				separated[i] = '<span style="background-color: #ffc0ee">' + separated[i].escapeForHTML() + "</span>";
 				wordCount++;
+			} else if(type == WordType.OnlyInDocument){
+				separated[i] = '<span style="background-color: #ffff88">' + separated[i].escapeForHTML() + "</span>";
+				wordCount++;
+				perceptionNotFoundCount++;
 			} else{
 				separated[i] = separated[i].escapeForHTML();
 			}
@@ -208,6 +215,7 @@ class Stempad
 		this.agreementRate = samePerceptionCount / wordCount * 100;
 		this.perceptLevelDiv.style.width = this.agreementRate + "%";
 		this.perceptLevelTextDiv.innerHTML = "一致度: " + this.agreementRate.toFixed(2) + "%";
+		this.perceptNotFoundLevelDiv.style.width = ((samePerceptionCount + perceptionNotFoundCount) / wordCount * 100) + "%";
 		text = separated.join("");
 		this.setEditorHTMLText(text);
 	}
@@ -217,6 +225,7 @@ $(function(){
 	var stempad:Stempad = new Stempad(
 		document.getElementById("editorbody"),
 		document.getElementById("perceptLevel"),
+		document.getElementById("perceptNotFoundLevel"),
 		document.getElementById("perceptLevelText")
 	);
 	stempad.setDictionary(
@@ -229,6 +238,7 @@ $(function(){
 			["k8sxescVRqK8YY+DsB3B8Q", "集合", "一か所に集まる、または集めること。"],
 			["67SNKR52QYqtrZH57SqMNA", "概念", "事象に対して、抽象化・ 普遍化してとらえた、思考の基礎となる基本的な形態として、脳の機能によってとらえたもの。"],
 			["mp2ZnRn/T9WSrVixhzGVdA", "数学", "数および図形についての学問"],
+			["UoXrwSmhSgqXwEAQIjvo+g", "写像", "二つの集合が与えられたときに、一方の集合の各元に対し、他方の集合のただひとつの元からなる集合を指定して結びつける対応のことである。"],
 		]
 	);
 	stempad.setEditorText("集合は、集合論のみならず現代数学全体における最も基本的な概念の一つであり、現代数学のほとんどが集合と写像の言葉で書かれていると言ってよい。");

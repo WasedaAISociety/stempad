@@ -503,7 +503,7 @@ var WordType;
 })(WordType || (WordType = {}));
 var Stempad = (function () {
     //
-    function Stempad(ediv, pdiv, ptdiv) {
+    function Stempad(ediv, pdiv, pndiv, ptdiv) {
         this.dictA = new Array();
         this.dictB = new Array();
         this.agreementRate = 0;
@@ -511,6 +511,7 @@ var Stempad = (function () {
         //
         this.editorDiv = ediv;
         this.perceptLevelDiv = pdiv;
+        this.perceptNotFoundLevelDiv = pndiv;
         this.perceptLevelTextDiv = ptdiv;
         this.editorDiv.onclick = function (e) { e.stopPropagation(); };
         this.setDictionary();
@@ -600,7 +601,7 @@ var Stempad = (function () {
                 }
                 else {
                     htmlSrc += '<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6"></div>';
-                    showWordCard(b, "dictB");
+                    showWordCard(b, "dictB onlyInDocument");
                 }
             }
             else {
@@ -646,6 +647,7 @@ var Stempad = (function () {
         var separated = text.splitByArraySeparatorSeparatedLong(this.wordListInDict);
         var wordCount = 0;
         var samePerceptionCount = 0;
+        var perceptionNotFoundCount = 0;
         for (var i = 0; i < separated.length; i++) {
             var type = this.getWordType(separated[i]);
             if (type == WordType.SamePerception) {
@@ -657,6 +659,11 @@ var Stempad = (function () {
                 separated[i] = '<span style="background-color: #ffc0ee">' + separated[i].escapeForHTML() + "</span>";
                 wordCount++;
             }
+            else if (type == WordType.OnlyInDocument) {
+                separated[i] = '<span style="background-color: #ffff88">' + separated[i].escapeForHTML() + "</span>";
+                wordCount++;
+                perceptionNotFoundCount++;
+            }
             else {
                 separated[i] = separated[i].escapeForHTML();
             }
@@ -664,13 +671,14 @@ var Stempad = (function () {
         this.agreementRate = samePerceptionCount / wordCount * 100;
         this.perceptLevelDiv.style.width = this.agreementRate + "%";
         this.perceptLevelTextDiv.innerHTML = "一致度: " + this.agreementRate.toFixed(2) + "%";
+        this.perceptNotFoundLevelDiv.style.width = ((samePerceptionCount + perceptionNotFoundCount) / wordCount * 100) + "%";
         text = separated.join("");
         this.setEditorHTMLText(text);
     };
     return Stempad;
 })();
 $(function () {
-    var stempad = new Stempad(document.getElementById("editorbody"), document.getElementById("perceptLevel"), document.getElementById("perceptLevelText"));
+    var stempad = new Stempad(document.getElementById("editorbody"), document.getElementById("perceptLevel"), document.getElementById("perceptNotFoundLevel"), document.getElementById("perceptLevelText"));
     stempad.setDictionary([
         ["LMD3UwP5Twms9hnW3yUHAQ", "集合", "ある特定のはっきり識別できる条件に合うものを一まとめにして考えた、全体。"],
         ["67SNKR52QYqtrZH57SqMNA", "概念", "事象に対して、抽象化・ 普遍化してとらえた、思考の基礎となる基本的な形態として、脳の機能によってとらえたもの。"],
@@ -679,6 +687,7 @@ $(function () {
         ["k8sxescVRqK8YY+DsB3B8Q", "集合", "一か所に集まる、または集めること。"],
         ["67SNKR52QYqtrZH57SqMNA", "概念", "事象に対して、抽象化・ 普遍化してとらえた、思考の基礎となる基本的な形態として、脳の機能によってとらえたもの。"],
         ["mp2ZnRn/T9WSrVixhzGVdA", "数学", "数および図形についての学問"],
+        ["UoXrwSmhSgqXwEAQIjvo+g", "写像", "二つの集合が与えられたときに、一方の集合の各元に対し、他方の集合のただひとつの元からなる集合を指定して結びつける対応のことである。"],
     ]);
     stempad.setEditorText("集合は、集合論のみならず現代数学全体における最も基本的な概念の一つであり、現代数学のほとんどが集合と写像の言葉で書かれていると言ってよい。");
 });
