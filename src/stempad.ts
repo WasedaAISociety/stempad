@@ -145,18 +145,18 @@ class Stempad
 				var b = this.dictB.includes(w, function(a, b){ return (a[1] === b); });
 				if(a && b){
 					htmlSrc += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3"></div>';
-					showWordCard(a, "dictCommon");
+					showWordCard(a, "dict-common");
 				} else if(a){
-					showWordCard(a, "dictA");
+					showWordCard(a, "dict-own");
 				} else{
 					htmlSrc += '<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6"></div>';
-					showWordCard(b, "dictB onlyInDocument");
+					showWordCard(b, "dict-only-in-doc");
 				}
 			} else{
 				var e = this.dictA.includes(w, function(a, b){ return (a[1] === b); });
-				showWordCard(e, "dictA");
+				showWordCard(e, "dict-own");
 				var e = this.dictB.includes(w, function(a, b){ return (a[1] === b); });
-				showWordCard(e, "dictB");
+				showWordCard(e, "dict-doc");
 			}
 			htmlSrc += '</div>';
 		}
@@ -198,14 +198,14 @@ class Stempad
 		for(var i = 0; i < separated.length; i++){
 			var type: WordType = this.getWordType(separated[i]);
 			if(type == WordType.SamePerception){
-				separated[i] = '<span style="background-color: #c0ffee">' + separated[i].escapeForHTML() + "</span>";
+				separated[i] = '<span class="highlight-same-perception">' + separated[i].escapeForHTML() + "</span>";
 				wordCount++;
 				samePerceptionCount++;
 			} else if(type == WordType.DifferentPerception){
-				separated[i] = '<span style="background-color: #ffc0ee">' + separated[i].escapeForHTML() + "</span>";
+				separated[i] = '<span class="highlight-different-perception">' + separated[i].escapeForHTML() + "</span>";
 				wordCount++;
 			} else if(type == WordType.OnlyInDocument){
-				separated[i] = '<span style="background-color: #ffff88">' + separated[i].escapeForHTML() + "</span>";
+				separated[i] = '<span class="highlight-only-in-doc">' + separated[i].escapeForHTML() + "</span>";
 				wordCount++;
 				perceptionNotFoundCount++;
 			} else{
@@ -213,9 +213,9 @@ class Stempad
 			}
 		}
 		this.agreementRate = samePerceptionCount / wordCount * 100;
-		this.perceptLevelDiv.style.width = this.agreementRate + "%";
+		//this.perceptLevelDiv.style.width = this.agreementRate + "%";
 		this.perceptLevelTextDiv.innerHTML = "一致度: " + this.agreementRate.toFixed(2) + "%";
-		this.perceptNotFoundLevelDiv.style.width = ((samePerceptionCount + perceptionNotFoundCount) / wordCount * 100) + "%";
+		//this.perceptNotFoundLevelDiv.style.width = ((samePerceptionCount + perceptionNotFoundCount) / wordCount * 100) + "%";
 		text = separated.join("");
 		this.setEditorHTMLText(text);
 	}
