@@ -26,6 +26,47 @@ class UUID
 			hex.substr(20, 12)
 		);
 	}
+	static convertFromBase64String(b64Str: string): any
+	{
+		var hex: string = "";
+		var tmp: number = 0;
+		var i: number;
+		
+		if(b64Str.length === 22){
+			// 末尾の==なしも許容
+			b64Str += "==";
+		}
+		for(i = 0; i < b64Str.length; i++){
+			var c: number = b64Str.charCodeAt(i);
+			tmp <<= 6;
+			if(0x41 <= c && c <= 0x5a){
+				// 0x00-0x19
+				tmp |= (c - 0x41);
+			} else if(0x61 <= c && c <= 0x7a){
+				// 0x1a-0x33
+				tmp |= (c - 0x61 + 0x1a);
+			} else if(0x30 <= c && c <= 0x39){
+				// 0x34-0x3d
+				tmp |= (c - 0x30 + 0x34);
+			} else if(c === 0x2b){
+				// 0x3e
+				tmp |= 0x3e;
+			} else if(c === 0x2f){
+				// 0x3f
+				tmp |= 0x3f;
+			} else if(c === 0x3d){
+				// padding
+			} else{
+				throw "Invalid Base64 String.";
+			}
+			if((i & 3) === 3){
+				hex += tmp.toString(16);
+				tmp = 0;
+			}
+		}
+		hex = hex.substr(0, 32);
+		return UUID.convertFromHexString(hex);
+	}
 	static generateVersion4(): string
 	{
 		var g = this.generate16bitHexStrFromNumber;

@@ -11,11 +11,22 @@
 /*
  *  Common
  */
- 
+
 body {
 	background-color: #777777;
 	font-family: Arial, Roboto, “Droid Sans”, “游ゴシック”, YuGothic, “ヒラギノ角ゴ ProN W3”, “Hiragino Kaku Gothic ProN”, “メイリオ”, Meiryo, sans-serif;
 	padding-bottom: 64px;
+}
+
+pre, code {
+    font-family: "Source Code Pro", Consolas, 'Courier New', Courier, Monaco, monospace;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+pre {
+	padding: 2px;
+	margin: 2px 0px 2px;
 }
 
 a.navbar-brand {
@@ -24,7 +35,7 @@ a.navbar-brand {
 
 div#editorbody {
 	border: 0px;
-	min-height: 100px;
+	min-height: 128px;
 	padding: 32px 32px 32px;
 	background-color: #ffffff;
 }
@@ -38,10 +49,10 @@ h4 {
  */
  
 .highlight-same-perception {
-	border: 2px solid #9999ff;
+	border: 2px solid #99ff99;
 	border-left: 0px;
 	border-right: 0px;
-	background-color: #ddddff;
+	background-color: #ddffdd;
 }
 
 .highlight-different-perception {
@@ -56,6 +67,35 @@ h4 {
 	border-left: 0px;
 	border-right: 0px;
 	background-color: #ffffbb;
+}
+
+/*
+ *  Highlight Tooltip
+ */
+ 
+.highlightip-same-perception {
+	border: 2px solid #99ff99;
+	background-color: #ddffdd;
+	color: #111144;
+	max-width: 300px;
+}
+
+.highlightip-different-perception {
+	border: 2px solid #ff9999;
+	background-color: #ffdddd;
+	color: #111144;
+	max-width: 300px;
+}
+
+.highlightip-only-in-doc {
+	border: 2px solid #ffff77;
+	background-color: #ffffbb;
+	color: #111144;
+	max-width: 300px;
+}
+
+.tooltip-inner h4 {
+	color: #111144;
 }
 
 /*

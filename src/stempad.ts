@@ -1,7 +1,8 @@
 /// <reference path="./lib/jquery.d.ts" />
 interface JQuery
 {
-	heightLine(): void;
+	heightLine(): JQuery;
+	tooltip(attr:any): JQuery;
 }
 
 /*
@@ -38,12 +39,52 @@ enum WordType
 	DifferentPerception,
 }
 
+class StempadWord
+{
+	word: string;
+	type: WordType;
+	wordIDInOwnDictionary: string;
+	wordIDInDocumentDictionary: string;
+	tooltipHTML: string;
+	//
+	constructor(word: string, env: Stempad){
+		this.word = word;
+		this.tooltipHTML = null;
+		//
+		var t = env.dictBasedWord.includes(word, function(a: Array<any>, b: string){ return (a[1] ===b); });
+		if(!t){
+			this.type = WordType.NotFound;
+			return;
+		}
+		t = t[1];
+		var a = env.dictA.includes(t, function(a, b){ return (a[1] === b); });
+		var b = env.dictB.includes(t, function(a, b){ return (a[1] === b); });
+		if(a && b){
+			if(a[0] === b[0]){
+				this.type = WordType.SamePerception;
+			} else{
+				this.type = WordType.DifferentPerception;
+			}
+			this.wordIDInOwnDictionary = a[0];
+			this.wordIDInDocumentDictionary = b[0];
+		} else if(a){
+			this.type = WordType.OnlyInOwn;
+			this.wordIDInOwnDictionary = a[0];
+		} else{
+			this.type = WordType.OnlyInDocument;
+			this.wordIDInDocumentDictionary = b[0];
+		}
+		this.tooltipHTML = word.escapeForHTML();
+	}
+}
+
 class Stempad
 {
 	editorDiv: HTMLElement;
-	perceptLevelDiv: HTMLElement;
-	perceptNotFoundLevelDiv: HTMLElement;
-	perceptLevelTextDiv: HTMLElement;
+	perceptLevelDiv_same: HTMLElement;
+	perceptLevelDiv_notfound: HTMLElement;
+	perceptLevelDiv_different: HTMLElement;
+	perceptLevelDiv_text: HTMLElement;
 	dictA: Array<any> = new Array<any>();
 	dictB: Array<any> = new Array<any>();
 	dictBasedID: Array<Array<string>>;
@@ -51,16 +92,18 @@ class Stempad
 	wordListInDict: Array<string>;
 	agreementRate: number = 0;
 	//
-	constructor(ediv: HTMLElement, pdiv: HTMLElement, pndiv: HTMLElement, ptdiv: HTMLElement){
+	constructor(){
 		var that:Stempad = this;
 		//
-		this.editorDiv = ediv;
-		this.perceptLevelDiv = pdiv;
-		this.perceptNotFoundLevelDiv = pndiv;
-		this.perceptLevelTextDiv = ptdiv;
-		this.editorDiv.onclick = function(e: any){ e.stopPropagation(); };
+		this.editorDiv = $("#editorbody")[0];
+		this.perceptLevelDiv_same = $("#perceptLevelParent .progress-bar-success")[0];
+		this.perceptLevelDiv_notfound = $("#perceptLevelParent .progress-bar-warning")[0];
+		this.perceptLevelDiv_different = $("#perceptLevelParent .progress-bar-danger")[0];
+		this.perceptLevelDiv_text = $("#perceptLevelParent #perceptLevelText")[0];
+		//
+		//this.editorDiv.onclick = function(e: any){ e.stopPropagation(); };
 		this.setDictionary();
-		document.body.onclick = function(){ that.markupBasedOnDictionary(); };
+		//document.body.onclick = function(){ that.markupBasedOnDictionary(); };
 	}
 	openWordMenu(elem: any): void
 	{
@@ -167,6 +210,7 @@ class Stempad
 			$(list[i].childNodes).heightLine();
 		}
 	}
+	/*
 	getWordType(w: string): WordType
 	{
 		var t = this.dictBasedWord.includes(w, function(a: Array<any>, b: string){ return (a[1] ===b); });
@@ -188,6 +232,7 @@ class Stempad
 			return WordType.OnlyInDocument;
 		}
 	}
+	*/
 	markupBasedOnDictionary(): void
 	{
 		var text = this.getEditorText();
@@ -196,16 +241,16 @@ class Stempad
 		var samePerceptionCount = 0;
 		var perceptionNotFoundCount = 0;
 		for(var i = 0; i < separated.length; i++){
-			var type: WordType = this.getWordType(separated[i]);
-			if(type == WordType.SamePerception){
-				separated[i] = '<span class="highlight-same-perception">' + separated[i].escapeForHTML() + "</span>";
+			var wordTag: StempadWord = new StempadWord(separated[i], this);
+			if(wordTag.type == WordType.SamePerception){
+				separated[i] = '<span class="highlight-same-perception w' + UUID.convertFromBase64String(wordTag.wordIDInDocumentDictionary) + '">' + separated[i].escapeForHTML() + "</span>";
 				wordCount++;
 				samePerceptionCount++;
-			} else if(type == WordType.DifferentPerception){
-				separated[i] = '<span class="highlight-different-perception">' + separated[i].escapeForHTML() + "</span>";
+			} else if(wordTag.type == WordType.DifferentPerception){
+				separated[i] = '<span class="highlight-different-perception w' + UUID.convertFromBase64String(wordTag.wordIDInDocumentDictionary) + '">' + separated[i].escapeForHTML() + "</span>";
 				wordCount++;
-			} else if(type == WordType.OnlyInDocument){
-				separated[i] = '<span class="highlight-only-in-doc">' + separated[i].escapeForHTML() + "</span>";
+			} else if(wordTag.type == WordType.OnlyInDocument){
+				separated[i] = '<span class="highlight-only-in-doc w' + UUID.convertFromBase64String(wordTag.wordIDInDocumentDictionary) + '">' + separated[i].escapeForHTML() + "</span>";
 				wordCount++;
 				perceptionNotFoundCount++;
 			} else{
@@ -213,21 +258,64 @@ class Stempad
 			}
 		}
 		this.agreementRate = samePerceptionCount / wordCount * 100;
-		//this.perceptLevelDiv.style.width = this.agreementRate + "%";
-		this.perceptLevelTextDiv.innerHTML = "一致度: " + this.agreementRate.toFixed(2) + "%";
-		//this.perceptNotFoundLevelDiv.style.width = ((samePerceptionCount + perceptionNotFoundCount) / wordCount * 100) + "%";
+		this.perceptLevelDiv_same.style.width = (samePerceptionCount / wordCount * 100) + "%";
+		this.perceptLevelDiv_notfound.style.width = (perceptionNotFoundCount / wordCount * 100) + "%";
+		this.perceptLevelDiv_different.style.width = (100 - ((samePerceptionCount + perceptionNotFoundCount) / wordCount * 100)) + "%";
+		this.perceptLevelDiv_text.innerHTML = "一致度: " + this.agreementRate.toFixed(2) + "%";
+		
 		text = separated.join("");
 		this.setEditorHTMLText(text);
+		//
+		for(var i = 0; i < this.dictBasedID.length; i++){
+			var classSelector: string = ".w" + UUID.convertFromBase64String(this.dictBasedID[i][0]);
+			var wordTag: StempadWord = new StempadWord(this.dictBasedID[i][1], this);
+			var templateHTML: string;
+			if(wordTag.type == WordType.SamePerception){
+				templateHTML = '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner highlightip-same-perception"></div></div>';
+			} else if(wordTag.type == WordType.DifferentPerception){
+				templateHTML = '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner highlightip-different-perception"></div></div>';
+			} else if(wordTag.type == WordType.OnlyInDocument){
+				templateHTML = '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner highlightip-only-in-doc"></div></div>';
+			} else{
+				continue;
+			}
+			//
+			var htmlStr = "<h4>" + this.dictBasedID[i][1] + "</h4><pre>ID: " + this.dictBasedID[i][0] + "</pre><p>" + this.dictBasedID[i][2] + "</p>";
+			$(classSelector).tooltip({
+				title: htmlStr,
+				placement: "bottom",
+				html: true,
+				template: templateHTML,
+				trigger: 'manual',
+			}).on("mouseenter", function (){
+				if(!this.tipStatus){
+					$(this).tooltip('show');
+					this.tipStatus = true;
+				}
+			}).on("mouseleave", function (){
+				if(!this.preventAutoHide && this.tipStatus){
+					$(this).tooltip('hide');
+					this.tipStatus = false;
+				}
+			}).on("click", function(){
+				this.preventAutoHide = !this.preventAutoHide;
+				event.stopPropagation();
+			});
+		}
+		$(document).click(function() {
+			$(".highlight-same-perception, .highlight-different-perception, .highlight-only-in-doc").tooltip('hide').each(function(){
+				this.tipStatus = false;
+				this.preventAutoHide = false;
+			});
+		});
 	}
 }
 
 $(function(){
-	var stempad:Stempad = new Stempad(
-		document.getElementById("editorbody"),
-		document.getElementById("perceptLevel"),
-		document.getElementById("perceptNotFoundLevel"),
-		document.getElementById("perceptLevelText")
-	);
+	$('#editorbody').tooltip({
+		selector: "a[rel=tooltip]"
+	});
+	var stempad:Stempad = new Stempad();
 	stempad.setDictionary(
 		[
 			["LMD3UwP5Twms9hnW3yUHAQ", "集合", "ある特定のはっきり識別できる条件に合うものを一まとめにして考えた、全体。"],

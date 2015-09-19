@@ -501,21 +501,59 @@ var WordType;
     WordType[WordType["SamePerception"] = 3] = "SamePerception";
     WordType[WordType["DifferentPerception"] = 4] = "DifferentPerception";
 })(WordType || (WordType = {}));
+var StempadWord = (function () {
+    //
+    function StempadWord(word, env) {
+        this.word = word;
+        this.tooltipHTML = null;
+        //
+        var t = env.dictBasedWord.includes(word, function (a, b) { return (a[1] === b); });
+        if (!t) {
+            this.type = WordType.NotFound;
+            return;
+        }
+        t = t[1];
+        var a = env.dictA.includes(t, function (a, b) { return (a[1] === b); });
+        var b = env.dictB.includes(t, function (a, b) { return (a[1] === b); });
+        if (a && b) {
+            if (a[0] === b[0]) {
+                this.type = WordType.SamePerception;
+            }
+            else {
+                this.type = WordType.DifferentPerception;
+            }
+            this.wordIDInOwnDictionary = a[0];
+            this.wordIDInDocumentDictionary = b[0];
+        }
+        else if (a) {
+            this.type = WordType.OnlyInOwn;
+            this.wordIDInOwnDictionary = a[0];
+        }
+        else {
+            this.type = WordType.OnlyInDocument;
+            this.wordIDInDocumentDictionary = b[0];
+        }
+        this.tooltipHTML = word.escapeForHTML();
+    }
+    return StempadWord;
+})();
 var Stempad = (function () {
     //
-    function Stempad(ediv, pdiv, pndiv, ptdiv) {
+    function Stempad() {
         this.dictA = new Array();
         this.dictB = new Array();
         this.agreementRate = 0;
         var that = this;
         //
-        this.editorDiv = ediv;
-        this.perceptLevelDiv = pdiv;
-        this.perceptNotFoundLevelDiv = pndiv;
-        this.perceptLevelTextDiv = ptdiv;
-        this.editorDiv.onclick = function (e) { e.stopPropagation(); };
+        this.editorDiv = $("#editorbody")[0];
+        this.perceptLevelDiv_same = $("#perceptLevelParent .progress-bar-success")[0];
+        this.perceptLevelDiv_notfound = $("#perceptLevelParent .progress-bar-warning")[0];
+        this.perceptLevelDiv_different = $("#perceptLevelParent .progress-bar-danger")[0];
+        this.perceptLevelDiv_text = $("#perceptLevelParent #perceptLevelText")[0];
+        //
+        //this.editorDiv.onclick = function(e: any){ e.stopPropagation(); };
         this.setDictionary();
-        document.body.onclick = function () { that.markupBasedOnDictionary(); };
+        //document.body.onclick = function(){ that.markupBasedOnDictionary(); };
     }
     Stempad.prototype.openWordMenu = function (elem) {
         console.log(elem);
@@ -619,29 +657,29 @@ var Stempad = (function () {
             $(list[i].childNodes).heightLine();
         }
     };
-    Stempad.prototype.getWordType = function (w) {
-        var t = this.dictBasedWord.includes(w, function (a, b) { return (a[1] === b); });
-        if (!t) {
+    /*
+    getWordType(w: string): WordType
+    {
+        var t = this.dictBasedWord.includes(w, function(a: Array<any>, b: string){ return (a[1] ===b); });
+        if(!t){
             return WordType.NotFound;
         }
         t = t[1];
-        var a = this.dictA.includes(t, function (a, b) { return (a[1] === b); });
-        var b = this.dictB.includes(t, function (a, b) { return (a[1] === b); });
-        if (a && b) {
-            if (a[0] === b[0]) {
+        var a = this.dictA.includes(t, function(a, b){ return (a[1] === b); });
+        var b = this.dictB.includes(t, function(a, b){ return (a[1] === b); });
+        if(a && b){
+            if(a[0] === b[0]){
                 return WordType.SamePerception;
-            }
-            else {
+            } else{
                 return WordType.DifferentPerception;
             }
-        }
-        else if (a) {
+        } else if(a){
             return WordType.OnlyInOwn;
-        }
-        else {
+        } else{
             return WordType.OnlyInDocument;
         }
-    };
+    }
+    */
     Stempad.prototype.markupBasedOnDictionary = function () {
         var text = this.getEditorText();
         var separated = text.splitByArraySeparatorSeparatedLong(this.wordListInDict);
@@ -649,18 +687,18 @@ var Stempad = (function () {
         var samePerceptionCount = 0;
         var perceptionNotFoundCount = 0;
         for (var i = 0; i < separated.length; i++) {
-            var type = this.getWordType(separated[i]);
-            if (type == WordType.SamePerception) {
-                separated[i] = '<span class="highlight-same-perception">' + separated[i].escapeForHTML() + "</span>";
+            var wordTag = new StempadWord(separated[i], this);
+            if (wordTag.type == WordType.SamePerception) {
+                separated[i] = '<span class="highlight-same-perception w' + UUID.convertFromBase64String(wordTag.wordIDInDocumentDictionary) + '">' + separated[i].escapeForHTML() + "</span>";
                 wordCount++;
                 samePerceptionCount++;
             }
-            else if (type == WordType.DifferentPerception) {
-                separated[i] = '<span class="highlight-different-perception">' + separated[i].escapeForHTML() + "</span>";
+            else if (wordTag.type == WordType.DifferentPerception) {
+                separated[i] = '<span class="highlight-different-perception w' + UUID.convertFromBase64String(wordTag.wordIDInDocumentDictionary) + '">' + separated[i].escapeForHTML() + "</span>";
                 wordCount++;
             }
-            else if (type == WordType.OnlyInDocument) {
-                separated[i] = '<span class="highlight-only-in-doc">' + separated[i].escapeForHTML() + "</span>";
+            else if (wordTag.type == WordType.OnlyInDocument) {
+                separated[i] = '<span class="highlight-only-in-doc w' + UUID.convertFromBase64String(wordTag.wordIDInDocumentDictionary) + '">' + separated[i].escapeForHTML() + "</span>";
                 wordCount++;
                 perceptionNotFoundCount++;
             }
@@ -669,16 +707,66 @@ var Stempad = (function () {
             }
         }
         this.agreementRate = samePerceptionCount / wordCount * 100;
-        //this.perceptLevelDiv.style.width = this.agreementRate + "%";
-        this.perceptLevelTextDiv.innerHTML = "一致度: " + this.agreementRate.toFixed(2) + "%";
-        //this.perceptNotFoundLevelDiv.style.width = ((samePerceptionCount + perceptionNotFoundCount) / wordCount * 100) + "%";
+        this.perceptLevelDiv_same.style.width = (samePerceptionCount / wordCount * 100) + "%";
+        this.perceptLevelDiv_notfound.style.width = (perceptionNotFoundCount / wordCount * 100) + "%";
+        this.perceptLevelDiv_different.style.width = (100 - ((samePerceptionCount + perceptionNotFoundCount) / wordCount * 100)) + "%";
+        this.perceptLevelDiv_text.innerHTML = "一致度: " + this.agreementRate.toFixed(2) + "%";
         text = separated.join("");
         this.setEditorHTMLText(text);
+        //
+        for (var i = 0; i < this.dictBasedID.length; i++) {
+            var classSelector = ".w" + UUID.convertFromBase64String(this.dictBasedID[i][0]);
+            var wordTag = new StempadWord(this.dictBasedID[i][1], this);
+            var templateHTML;
+            if (wordTag.type == WordType.SamePerception) {
+                templateHTML = '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner highlightip-same-perception"></div></div>';
+            }
+            else if (wordTag.type == WordType.DifferentPerception) {
+                templateHTML = '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner highlightip-different-perception"></div></div>';
+            }
+            else if (wordTag.type == WordType.OnlyInDocument) {
+                templateHTML = '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner highlightip-only-in-doc"></div></div>';
+            }
+            else {
+                continue;
+            }
+            //
+            var htmlStr = "<h4>" + this.dictBasedID[i][1] + "</h4><pre>ID: " + this.dictBasedID[i][0] + "</pre><p>" + this.dictBasedID[i][2] + "</p>";
+            $(classSelector).tooltip({
+                title: htmlStr,
+                placement: "bottom",
+                html: true,
+                template: templateHTML,
+                trigger: 'manual'
+            }).on("mouseenter", function () {
+                if (!this.tipStatus) {
+                    $(this).tooltip('show');
+                    this.tipStatus = true;
+                }
+            }).on("mouseleave", function () {
+                if (!this.preventAutoHide && this.tipStatus) {
+                    $(this).tooltip('hide');
+                    this.tipStatus = false;
+                }
+            }).on("click", function () {
+                this.preventAutoHide = !this.preventAutoHide;
+                event.stopPropagation();
+            });
+        }
+        $(document).click(function () {
+            $(".highlight-same-perception, .highlight-different-perception, .highlight-only-in-doc").tooltip('hide').each(function () {
+                this.tipStatus = false;
+                this.preventAutoHide = false;
+            });
+        });
     };
     return Stempad;
 })();
 $(function () {
-    var stempad = new Stempad(document.getElementById("editorbody"), document.getElementById("perceptLevel"), document.getElementById("perceptNotFoundLevel"), document.getElementById("perceptLevelText"));
+    $('#editorbody').tooltip({
+        selector: "a[rel=tooltip]"
+    });
+    var stempad = new Stempad();
     stempad.setDictionary([
         ["LMD3UwP5Twms9hnW3yUHAQ", "集合", "ある特定のはっきり識別できる条件に合うものを一まとめにして考えた、全体。"],
         ["67SNKR52QYqtrZH57SqMNA", "概念", "事象に対して、抽象化・ 普遍化してとらえた、思考の基礎となる基本的な形態として、脳の機能によってとらえたもの。"],
@@ -738,6 +826,50 @@ var UUID = (function () {
             hex.substr(12, 4) + "-" +
             hex.substr(16, 4) + "-" +
             hex.substr(20, 12));
+    };
+    UUID.convertFromBase64String = function (b64Str) {
+        var hex = "";
+        var tmp = 0;
+        var i;
+        if (b64Str.length === 22) {
+            // 末尾の==なしも許容
+            b64Str += "==";
+        }
+        for (i = 0; i < b64Str.length; i++) {
+            var c = b64Str.charCodeAt(i);
+            tmp <<= 6;
+            if (0x41 <= c && c <= 0x5a) {
+                // 0x00-0x19
+                tmp |= (c - 0x41);
+            }
+            else if (0x61 <= c && c <= 0x7a) {
+                // 0x1a-0x33
+                tmp |= (c - 0x61 + 0x1a);
+            }
+            else if (0x30 <= c && c <= 0x39) {
+                // 0x34-0x3d
+                tmp |= (c - 0x30 + 0x34);
+            }
+            else if (c === 0x2b) {
+                // 0x3e
+                tmp |= 0x3e;
+            }
+            else if (c === 0x2f) {
+                // 0x3f
+                tmp |= 0x3f;
+            }
+            else if (c === 0x3d) {
+            }
+            else {
+                throw "Invalid Base64 String.";
+            }
+            if ((i & 3) === 3) {
+                hex += tmp.toString(16);
+                tmp = 0;
+            }
+        }
+        hex = hex.substr(0, 32);
+        return UUID.convertFromHexString(hex);
     };
     UUID.generateVersion4 = function () {
         var g = this.generate16bitHexStrFromNumber;
