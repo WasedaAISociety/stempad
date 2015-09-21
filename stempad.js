@@ -551,9 +551,15 @@ var Stempad = (function () {
         this.perceptLevelDiv_different = $("#perceptLevelParent .progress-bar-danger")[0];
         this.perceptLevelDiv_text = $("#perceptLevelParent #perceptLevelText")[0];
         //
-        //this.editorDiv.onclick = function(e: any){ e.stopPropagation(); };
+        this.editorDiv.onclick = function (e) { e.stopPropagation(); };
         this.setDictionary();
-        //document.body.onclick = function(){ that.markupBasedOnDictionary(); };
+        document.body.onclick = function () {
+            $(".highlight-same-perception, .highlight-different-perception, .highlight-only-in-doc").tooltip('hide').each(function () {
+                this.tipStatus = false;
+                this.preventAutoHide = false;
+            });
+            that.markupBasedOnDictionary();
+        };
     }
     Stempad.prototype.openWordMenu = function (elem) {
         console.log(elem);
@@ -737,7 +743,8 @@ var Stempad = (function () {
                 placement: "bottom",
                 html: true,
                 template: templateHTML,
-                trigger: 'manual'
+                trigger: 'manual',
+                container: 'body'
             }).on("mouseenter", function () {
                 if (!this.tipStatus) {
                     $(this).tooltip('show');
@@ -753,12 +760,6 @@ var Stempad = (function () {
                 event.stopPropagation();
             });
         }
-        $(document).click(function () {
-            $(".highlight-same-perception, .highlight-different-perception, .highlight-only-in-doc").tooltip('hide').each(function () {
-                this.tipStatus = false;
-                this.preventAutoHide = false;
-            });
-        });
     };
     return Stempad;
 })();
