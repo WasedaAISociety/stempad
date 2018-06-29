@@ -3,8 +3,10 @@ stempad
 
 Stempad is a simple way to write papers logically clear, and check difference of perception of words between you and others.
 
+Currently, this is just a mock-up and not completed.
+
 ## Usage
-Launch www/index.html on your web browser.
+Launch [www/index.html](./www/index.html) on your web browser.
 
 ## Licence
 
